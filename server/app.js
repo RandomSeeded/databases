@@ -1,5 +1,6 @@
 var express = require('express');
-var db = require('./db');
+//var db = require('./db');
+var sequelize = require('./initSeq.js');
 
 // Middleware
 var morgan = require('morgan');
@@ -10,6 +11,11 @@ var router = require('./routes.js');
 
 var app = express();
 module.exports.app = app;
+
+// Create sqlizer tables
+sequelize.User.sync();
+sequelize.Message.sync();
+sequelize.Room.sync();
 
 // Set what we are listening on.
 app.set("port", 3000);

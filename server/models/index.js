@@ -1,46 +1,38 @@
-var db = require('../db');
+// var db = require('../db');
+var sequelize = require('../initSeq.js');
+var Room = sequelize.Room;
+var User = sequelize.User;
+var Message = sequelize.Message;
 var moment = require("moment");
 
 module.exports = {
   messages: {
     get: function (callback) {
-      //query //with restults: replace user_id with user name
-      db.query(
-        "select m.id as objectId, m.text, u.username, \
-        m.room_id as roomname, m.created_at as createdAt \
-        from messages m inner join \
-        users u on m.user_id = u.id",
-        function(err, results){
-          if (err) console.log(err);
-          else callback(results);
+      Message.findAll(
+        {include: [{model: User}]}
+      ).then(function(messages){
+        var mapped = messages.map(function(message) {
+          message.dataValues.objectId = message.dataValues.id;
+          message.dataValues.username = message.dataValues.User.username;
+          return message.dataValues;
         });
-        //do the callback
-    }, // a function which produces all the messages
+        callback(mapped);
+      });
+    },
     post: function (message) {
       console.log("Adding Message to Database");
-      db.query('select id from users where username = ?', [message.username], function(err, results) {
-        if (err) { console.log(err); }
-        if (results.length === 0) {
-          db.query('insert into users set ?', {username: message.username }, function(err, result) {
-            if (err) { console.log(err); }
-            var newUserId = result.insertId;
-            insertMessage(message, newUserId);
-          });
-        }
-        else {
-          var userId = results[0].id;
-          insertMessage(message, userId);
-        }
-      });
+      
+      // get userid
+      User.findOrCreate({where: {username: message.username}})
+        .spread(function(user, wasCreated) {
+          var uid = user.get('id');
+          console.log('UID:',uid);
 
-      function insertMessage(message, userId) {
-        db.query('insert into messages set ? ', {
-          user_id: userId,
-          room_id: 7,
-          created_at: moment().format('YYYY-MM-DD hh:mm:ss'),
-          text: message.text
+          // insert message
+          Message.build({UserId: uid, text: message.text, room_id: 7}).save().then(function() {
+            console.log('message saved');
+          });
         });
-      }
     }
   },
 

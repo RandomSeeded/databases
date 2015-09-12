@@ -14,7 +14,7 @@ var User = sequelize.define('User', {
   username: Sequelize.STRING
 });
 
-var Message = sequelize.define('Message' {
+var Message = sequelize.define('Message', {
   userid: Sequelize.INTEGER,
   text: Sequelize.STRING,
   roomname: Sequelize.STRING
@@ -22,21 +22,30 @@ var Message = sequelize.define('Message' {
 
 /* .sync() makes Sequelize create the database table for us if it doesn't
  *  exist already: */
-User.sync().success(function() {
+User.sync().then(function() {
   /* This callback function is called once sync succeeds. */
 
   // now instantiate an object and save it:
-  var newUser = User.build({username: "Jean Valjean"});
-  newUser.save().success(function() {
+  console.log('synced');
+  var newUser = User.findOrCreate({where: {username: "unique7"}})
+    .spread(function(user, wasCreated) {
+      console.log('user',user);
+      console.log('was created',wasCreated);
+      console.log(user.get("id"));
 
-    /* This callback function is called once saving succeeds. */
-
-    // Retrieve objects from the database:
-    User.findAll({ where: {username: "Jean Valjean"} }).success(function(usrs) {
-      // This function is called back with an array of matches.
-      for (var i = 0; i < usrs.length; i++) {
-        console.log(usrs[i].username + " exists");
-      }
+      //unique id is > user.datavalues.id
     });
-  });
+  // newUser.save().then(function() {
+  //   console.log('saved');
+
+  //   /* This callback function is called once saving succeeds. */
+
+  //   // Retrieve objects from the database:
+  //   // User.findAll({ where: {username: "Jean Valjean"} }).success(function(usrs) {
+  //   //   // This function is called back with an array of matches.
+  //   //   for (var i = 0; i < usrs.length; i++) {
+  //   //     console.log(usrs[i].username + " exists");
+  //   //   }
+  //   // });
+  // });
 });
