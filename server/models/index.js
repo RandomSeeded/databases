@@ -38,7 +38,20 @@ module.exports = {
 
   users: {
     // Ditto as above.
-    get: function () {},
+    get: function (username, callback) {
+      Message.findAll(
+        {include: [{model: User}]}
+      ).then(function(messages){
+        var results = messages.map(function(message) {
+          message.dataValues.objectId = message.dataValues.id;
+          message.dataValues.username = message.dataValues.User.username;
+          return message.dataValues;
+        }).filter(function(dataValue) {
+          return (dataValue.username === username);
+        });        
+        callback(results);
+      });
+    },
     post: function (user) {
 
     }

@@ -21,7 +21,10 @@ module.exports = {
   users: {
     // Ditto as above
     get: function (req, res) {
-      console.log('user get req');
+      var username = (/(username=)(.*)/).exec(req.url)[2];
+      models.users.get(username, function(results) {
+        res.status(200).send(JSON.stringify({results:results}));
+      });
     },
     post: function (req, res) {
       console.log('user post req');

@@ -34,7 +34,7 @@ var Messages = Backbone.Collection.extend({
   url: 'http://localhost:3000/classes/messages/',
 
   loadMsgs: function() {
-    this.fetch({data: { order: '-createdAt' }});
+    this.fetch();
   },
 
   parse: function(response, options) {
@@ -54,7 +54,8 @@ var FormView = Backbone.View.extend({
   },
 
   events: {
-    'submit #send': 'handleSubmit'
+    'submit #send': 'handleSubmit',
+    'submit #filter-form': 'handleFilter'
   },
 
   handleSubmit: function(e) {
@@ -68,6 +69,21 @@ var FormView = Backbone.View.extend({
       text: $text.val()
     });
     $text.val('');
+  },
+
+  handleFilter: function(e) {
+    //TODO
+    console.log('true');
+    e.preventDefault();
+    var username = this.$('#filter-text').val();
+    if (username === ''){
+      //rest to degault on empty filter
+      this.collection.url = 'http://localhost:3000/classes/messages/';
+    }
+    else {
+      this.collection.url = 'http://localhost:3000/classes/users/?username=' + username;
+    }
+
   },
 
   startSpinner: function() {
@@ -108,15 +124,16 @@ var MessagesView = Backbone.View.extend({
   },
 
   render: function() {
+    this.$el.empty();
     this.collection.forEach(this.renderMessage, this);
   },
 
   renderMessage: function(message) {
-    if (!this.onscreenMessages[message.get('objectId')]) {
+    // if (!this.onscreenMessages[message.get('objectId')]) {
       var messageView = new MessageView({model: message});
-      this.$el.prepend(messageView.render());
+      this.$el.append(messageView.render());
       this.onscreenMessages[message.get('objectId')] = true;
-    }
+    // }
   }
 
 });
